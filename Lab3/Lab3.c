@@ -1,102 +1,124 @@
-#include <stdio.h>
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include "freertos/queue.h"
-#include "string.h"
+#include <stdio.h>
 
-
-TaskHandle_t myTask1Handle = NULL;
-TaskHandle_t myTask2Handle = NULL;
-TaskHandle_t myTask3Handle = NULL;
-QueueHandle_t queue1;
-
- void task1(void *arg)
+void sendTask1(void *pvParam)
 {
-    printf("task 1 \n");
+	QueueHandle_t QHandle = (QueueHandle_t) pvParam;
+	BaseType_t xStatus;
+	char *pcStrToSend;
+	const int strMaxLen = 50;
 
-char txbuff[50];
-queue1= xQueueCreate(100, sizeof(txbuff));
+	int i  = 1;
+	while(1)
+	{
+		pcStrToSend = (char *) malloc(strMaxLen);
+		snprintf(pcStrToSend, strMaxLen, "String number = %d", i);
 
- if( queue1 == 0 )
- {
-    printf("failed to create queue1= %p \n",queue1); // Failed to create the queue.
+		xStatus = xQueueSendToBack(QHandle, &i, 0);
+		if(xStatus != pdPASS)
+		{
+			printf("task 1 can't send! \n");
 
- }
-
-
- for(int i = 0;  i< 100; i ++)
- {
-	int data = i%3;
-    // printf("data: %d \n", data);
-    sprintf(txbuff,"%d", data);
-    // printf("txbuff: ",txbuff);
-	xQueueSend(queue1, (void*)txbuff , 0 );
- }
-
- while(1){
-
-//   printf("data waiting to be read : %d  available spaces: %d \n",uxQueueMessagesWaiting(queue1),uxQueueSpacesAvailable(queue1));
-
-   vTaskDelay(pdMS_TO_TICKS(1000)); }
+		}
+		else
+		{
+			printf("task 1 send done! \n");
+		}
+		vTaskDelay(1000/ portTICK_PERIOD_MS);
+	}
 }
 
- void task2(void *arg)
+
+void sendTask2(void *pvParam)
 {
+	QueueHandle_t QHandle = (QueueHandle_t) pvParam;
+	BaseType_t xStatus;
+	char *pcStrToSend;
+	const int strMaxLen = 50;
 
-    // printf("task 2 \n");
-char rxbuff[50];
-while(1)
+	int i  = 2;
+	while(1)
+	{
+		pcStrToSend = (char *) malloc(strMaxLen);
+		snprintf(pcStrToSend, strMaxLen, "String number = %d", i);
 
-  {
-if(xQueueReceive(queue1, &(rxbuff) , (TickType_t)5 ))
+		xStatus = xQueueSendToBack(QHandle, &i, 0);
+		if(xStatus != pdPASS)
+		{
+			printf("task 2 can't send! \n");
+
+		}
+		else
+		{
+			printf("task 2 send done! \n");
+		}
+		vTaskDelay(1000/ portTICK_PERIOD_MS);
+	}
+}
+void sendTask3(void *pvParam)
 {
-    // printf(rxbuff);
-	if(rxbuff[0] == '0')
+	QueueHandle_t QHandle = (QueueHandle_t) pvParam;
+	BaseType_t xStatus;
+	char *pcStrToSend;
+	const int strMaxLen = 50;
+
+	int i  = 3;
+	while(1)
 	{
-		printf("task 2 is running with id:  %s \n",rxbuff); }
+		pcStrToSend = (char *) malloc(strMaxLen);
+		snprintf(pcStrToSend, strMaxLen, "String number = %d", i);
+
+		xStatus = xQueueSendToBack(QHandle, &i, 0);
+		if(xStatus != pdPASS)
+		{
+			printf("task 3 can't send! \n");
+
+		}
+		else
+		{
+			printf("task error send done! \n");
+		}
+		vTaskDelay(1000/ portTICK_PERIOD_MS);
 	}
-	if(rxbuff[0] == '2')
-	{
-		printf("error id: %s \n", rxbuff);
-	}
-
-
-
-   vTaskDelay(pdMS_TO_TICKS(1000));
-   }
 }
 
- void task3(void *arg)
- {
-    // printf("task 3 \n");
- char rxbuff[50];
- while(1)
-
-   {
-    // printf("while in task 3 \n");
-	 if(xQueueReceive(queue1, &(rxbuff) , (TickType_t)5 ))
-	 {
-        // printf(rxbuff);
-		 if(rxbuff[0] == '1')
-		 	{
-		 		printf("task 3 is running with id:  %s \n",rxbuff); }
-		 	}
-	 if(rxbuff[0] == '2')
-	 	{
-	 		printf("error id: %s \n", rxbuff);
-	 	}
-
-	 	 vTaskDelay(pdMS_TO_TICKS(1000));
-    	}
- }
-
-
-
-void app_main()
+void recTask(void * pvParam)
 {
+	QueueHandle_t  QHandle = (QueueHandle_t) pvParam;
+	BaseType_t xStatus;
+	int j = 0;
+	while(1)
+	{
+		xStatus = xQueueReceive(QHandle, &j, portMAX_DELAY);
+		if(xStatus != pdPASS)
+			printf("rec fail!\n");
+		else
+		{
+			if( j == 3) printf("raise error task, can't find task %d\n", j);
+			else printf("task %d will run!\n", j);
+		}
+			vTaskDelay(1000/ portTICK_PERIOD_MS);
+	}
+}
 
-    xTaskCreate(task1, "task1", 4096, NULL, 10, &myTask1Handle);
-    xTaskCreatePinnedToCore(task2, "task2", 4096, NULL, 10, &myTask2Handle,1);
-    xTaskCreatePinnedToCore(task3, "task3", 4096, NULL, 10, &myTask3Handle,1);
 
+//-------------------------------------------------------------------------
+void app_main(void)
+{
+	QueueHandle_t QHandle = xQueueCreate(5, sizeof(int));
+
+	if(QHandle != NULL)
+	{
+		printf("The queue successfully! \n");
+		xTaskCreate(sendTask1, "sendTask1", 1024*5, (void*)QHandle, 1, NULL);
+		xTaskCreate(sendTask2, "sendTask2", 1024*5, (void*)QHandle, 1, NULL);
+		xTaskCreate(sendTask3, "sendTask3", 1024*5, (void*)QHandle, 1, NULL);
+		xTaskCreate(recTask, "recTask", 1024*5, (void*)QHandle, 2, NULL);
+	}
+	else
+	{
+		printf("The queue can't be created! \n");
+	}
 }
