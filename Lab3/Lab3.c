@@ -26,7 +26,7 @@ queue1= xQueueCreate(100, sizeof(txbuff));
 
  for(int i = 0;  i< 100; i ++)
  {
-	int data = i%2;
+	int data = i%3;
     // printf("data: %d \n", data);
     sprintf(txbuff,"%d", data);
     // printf("txbuff: ",txbuff);
@@ -57,7 +57,7 @@ if(xQueueReceive(queue1, &(rxbuff) , (TickType_t)5 ))
 	{
 		printf("task 2 is running with id:  %s \n",rxbuff); }
 	}
-	if(rxbuff[0] == '3')
+	if(rxbuff[0] == '2')
 	{
 		printf("error id: %s \n", rxbuff);
 	}
@@ -84,7 +84,7 @@ if(xQueueReceive(queue1, &(rxbuff) , (TickType_t)5 ))
 		 	{
 		 		printf("task 3 is running with id:  %s \n",rxbuff); }
 		 	}
-	 if(rxbuff[0] == '3')
+	 if(rxbuff[0] == '2')
 	 	{
 	 		printf("error id: %s \n", rxbuff);
 	 	}
