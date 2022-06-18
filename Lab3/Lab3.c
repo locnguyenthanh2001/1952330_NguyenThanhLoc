@@ -48,8 +48,6 @@ char rxbuff[50];
 while(1)
 
   {
-//     printf("while in task 2 \n");
-//if(xQueuePeek(queue1, &(rxbuff) , (TickType_t)5 ))
 if(xQueueReceive(queue1, &(rxbuff) , (TickType_t)5 ))
 {
     // printf(rxbuff);
@@ -76,7 +74,6 @@ if(xQueueReceive(queue1, &(rxbuff) , (TickType_t)5 ))
 
    {
     // printf("while in task 3 \n");
- //if(xQueuePeek(queue1, &(rxbuff) , (TickType_t)5 ))
 	 if(xQueueReceive(queue1, &(rxbuff) , (TickType_t)5 ))
 	 {
         // printf(rxbuff);
