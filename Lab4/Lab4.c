@@ -37,8 +37,8 @@ void app_main(void)
     printf("START!\n");
     TimerHandle_t xTimer_1 = NULL;
     TimerHandle_t xTimer_2 = NULL;
-    xTimer_1 = xTimerCreate ( "Timer1" , 2000 , pdTRUE , 1 ,  ATimerCallback);
-    xTimer_2 = xTimerCreate ( "Timer2" , 3000 , pdTRUE , 2 ,  ATimerCallback);
+    xTimer_1 = xTimerCreate ( "Timer1" , 2000 / portTICK_RATE_MS , pdTRUE , 1 ,  ATimerCallback);
+    xTimer_2 = xTimerCreate ( "Timer2" , 3000 / portTICK_RATE_MS , pdTRUE , 2 ,  ATimerCallback);
     if(xTimer_1 != NULL){
         xTimerStart(xTimer_1, 0);
     }
